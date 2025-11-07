@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Máquina de Turing – Ingeniería en Sistemas UMG Cobán</title>
+<style>
+  :root{font-family:Inter,system-ui,Segoe UI,Roboto,Arial; font-size:14px}
+  body{margin:0;background:#f5f6fb;color:#111827}
+  header{
+    text-align:center;background:linear-gradient(90deg,#003366,#0066cc,#00aaff);
+    color:#fff;padding:24px 10px;border-bottom:4px solid #004c99;
+    font-weight:700;font-size:22px;letter-spacing:.5px;box-shadow:0 4px 12px rgba(0,0,0,.15)
+  }
+  .page{max-width:1200px;margin:28px auto;padding:0 14px}
+  .cols{display:grid;grid-template-columns:1.6fr .9fr;gap:16px}
+  .panel{background:#fff;border:1px solid #e6ebf5;border-radius:12px;box-shadow:0 8px 20px rgba(16,24,40,.06)}
+  .panel .phead{padding:10px 14px;border-bottom:1px solid #e6ebf5;font-weight:700}
+  .panel .pbody{padding:14px}
+  h1{margin:0 0 10px;font-size:20px}
+  label{display:block;margin-top:8px;font-weight:600}
+  input[type="text"]{width:100%;padding:8px;margin-top:6px;border:1px solid #d0d7e2;border-radius:6px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .col{flex:1 1 320px}
+  button{padding:10px 14px;border-radius:8px;border:0;background:#1f6fff;color:#fff;cursor:pointer}
+  button.secondary{background:#eef3ff;color:#1f3b8f}
+  .controls{display:flex;gap:8px;flex-wrap:wrap}
+  .result{margin-top:14px;padding:12px;background:#f3f7ff;border:1px solid #e2e8ff;border-radius:6px}
+  .stateBar{margin-top:12px;padding:10px;border-radius:8px;background:#fafbff;border:1px solid #e8eef9;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .small{font-size:13px;color:#5b6472}
+  .automataBox{text-align:center;margin:18px 0}
+  .automataImg{max-width:100%;height:auto;border:2px solid #cbd5e1;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+  /* Cinta */
+  .legend{font-size:12px;color:#5b6472;margin:6px 0}
+  .tape{display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:14px;background:#0f1724;color:#fff;border-radius:10px;overflow:auto}
+  .cell{width:40px;height:52px;border-radius:6px;background:#111827;display:flex;align-items:center;justify-content:center;font-weight:700;border:1px solid rgba(255,255,255,.08)}
+  .sep{background:#6b7280}
+  .blank{opacity:.6}
+  .head{outline:3px solid #ffd54f;box-shadow:0 6px 18px rgba(0,0,0,.4) inset}
+  .zone{display:inline-block;padding:2px 6px;border:1px dashed #cbd5e1;border-radius:6px;margin-right:6px}
+  .note{margin-top:8px;color:#5b6472}
+
+  /* Formal y DI */
+  pre.formal{font-family:ui-monospace,Consolas,monospace;background:#fbfbfe;border:1px solid #eceffe;border-radius:8px;padding:10px;white-space:pre-wrap}
+  .diList{font-family:ui-monospace,Consolas,monospace;background:#0f1724;color:#e5edff;border-radius:10px;padding:12px;max-height:360px;overflow:auto;border:1px solid #1f2a44}
+  .diList .line{padding:2px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+  .diBtns{display:flex;gap:8px;margin-top:10px}
+  .chip{display:inline-block;background:#eef3ff;color:#1f3b8f;border:1px solid #d9e3ff;border-radius:999px;padding:2px 8px;font-size:12px;margin-top:6px}
+  @media (max-width:1000px){.cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>🎓 Ingeniería en Sistemas – UMG Cobán</header>
+<div class="phead">DAVID ESTUARDO LOPEZ CAAL</div>
+<div class="page">
+  <div class="cols">
+
+    <!-- Columna izquierda: simulación -->
+    <div class="panel">
+      <div class="phead">Simulación de Máquina de Turing - Resta de Binarios</div>
+      <div class="pbody">
+
+        <!-- Imagen del autómata exportada desde JFLAP -->
+        <div class="automataBox">
+          <img src="automata.png" alt="Autómata en JFLAP" class="automataImg">
+          <div class="small chip">Figura: Autómata de la Máquina de Turing (JFLAP)</div>
+        </div>
+
+        <p class="small">Ingresa dos cadenas binarias. La cinta se organiza como
+          <span class="zone">Cadena 1</span><span class="zone">#</span><span class="zone">Cadena 2</span><span class="zone">#</span><span class="zone">Resultado</span>.
+          La cabeza recorre de derecha a izquierda y escribe el resultado bit a bit.
+        </p>
+
+        <label>Cadena 1</label>
+        <input id="inputA" type="text" placeholder="Ej: 0010" value="0010"/>
+
+        <label>Cadena 2</label>
+        <input id="inputB" type="text" placeholder="Ej: 0010" value="0010"/>
+
+        <div class="row">
+          <div class="col">
+            <label>Opciones</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input id="padZeros" type="checkbox" checked />
+              <label for="padZeros" style="margin:0;font-weight:400">Rellenar a la misma longitud</label>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+              <input id="allowTwoComplement" type="checkbox" />
+              <label for="allowTwoComplement" style="margin:0;font-weight:400">Si C1 &lt; C2, mostrar complemento a dos</label>
+            </div>
+          </div>
+          <div class="col">
+            <label>Simulación</label>
+            <div class="controls">
+              <button id="calcNow">Calcular (rápido)</button>
+              <button id="startSim" class="secondary">Iniciar</button>
+              <button id="stepSim" class="secondary">Paso</button>
+              <button id="resetSim" class="secondary">Reiniciar</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-top:10px;">
+              <label class="small">Velocidad</label>
+              <input id="speed" type="range" min="50" max="1200" value="300"/>
+              <span id="speedVal" class="small">300 ms</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="output" class="result" aria-live="polite">
+          <div><strong>Resultado:</strong> <span id="resultText">—</span></div>
+          <div class="note" id="explain">—</div>
+        </div>
+
+        <div class="stateBar">
+          <div><strong>Estado:</strong> <span id="state">Idle</span></div>
+          <div><strong>Paso:</strong> <span id="stepCount">0</span></div>
+        </div>
+
+        <div class="legend">Leyenda: <span class="zone">C1</span><span class="zone">#</span><span class="zone">C2</span><span class="zone">#</span><span class="zone">R</span> • Blanco = <code>·</code> • Cabeza = amarillo</div>
+        <div id="tape" class="tape"></div>
+
+      </div>
+    </div>
+
+    <!-- Columna derecha: Formal + DI -->
+    <div class="panel">
+      <div class="phead">Descripción formal (resumen)</div>
+      <div class="pbody">
+        <pre class="formal">M = (Q, Σ, Γ, δ, q0, B, F)
+Q  = { q0, q1, q2, qH }
+Σ  = { 0, 1, # }
+Γ  = { 0, 1, #, _ }        (_ es blanco)
+q0 inicial,  B = _,  F = { qH }</pre>
+
+        <div class="phead" style="margin-top:12px;border:0;padding-left:0">Descripción instantánea (lista)</div>
+        <div id="diList" class="diList">
+          <div class="line">(q0, [·])</div>
+        </div>
+        <div class="diBtns">
+          <button id="clearDI" class="secondary">Limpiar DI</button>
+          <button id="copyDI" class="secondary">Copiar DI</button>
+        </div>
+        <div class="small" style="margin-top:8px">
+          Formato: <code>(q, izquierda[símbolo]derecha)</code>. El símbolo entre corchetes es el que está bajo la cabeza.
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ===== Utilidades ===== */
+const _ = s=>document.querySelector(s);
+function sanitizeBin(s){s=(s||'').trim().replace(/[^01]/g,'');return s||'0'}
+function padLeft(s,len,ch='0'){while(s.length<len)s=ch+s;return s}
+function compareBinary(a,b){if(a.length!==b.length)return a.length>b.length?1:-1;if(a===b)return 0;return a>b?1:-1}
+
+/* ===== Resta rápida ===== */
+function subtractBinary(A,B,opts={twoComplementIfNeg:false,pad:true}){
+  A=sanitizeBin(A);B=sanitizeBin(B);
+  if(opts.pad){const L=Math.max(A.length,B.length);A=padLeft(A,L);B=padLeft(B,L)}
+  const cmp=compareBinary(A,B);
+  if(cmp<0&&!opts.twoComplementIfNeg)
+    return {ok:false,reason:'C1 < C2 (negativo). Activa complemento a dos.'};
+  if(cmp<0&&opts.twoComplementIfNeg){
+    const n=Math.max(A.length,B.length);
+    let notB=B.split('').map(x=>x==='0'?'1':'0').join(''),carry=1,res=[];
+    for(let i=n-1;i>=0;i--){const sum=(+A[i])+(+notB[i])+carry;res.push(String(sum&1));carry=sum>1?1:0}
+    return {ok:true,result:res.reverse().join(''),note:'Complemento a dos (n bits).'};
+  }
+  let borrow=0,out=[];
+  for(let i=A.length-1;i>=0;i--){
+    let d=(+A[i])-(+B[i])-borrow;
+    if(d>=0){out.push(String(d));borrow=0}else{out.push(String(d+2));borrow=1}
+  }
+  return {ok:true,result:out.reverse().join(''),note:'Resta bit a bit con borrow.'};
+}
+
+/* ===== Simulación MT (A # B # R) ===== */
+class TMSim{
+  constructor(A,B,{pad=true}={}){
+    this.A=sanitizeBin(A);this.B=sanitizeBin(B);
+    if(pad){const L=Math.max(this.A.length,this.B.length);this.A=padLeft(this.A,L);this.B=padLeft(this.B,L)}
+    this.n=this.A.length;
+    this.tape=[...this.A.split(''),'#',...this.B.split(''),'#',...Array(this.n).fill(' ')];
+    this.posAend=this.n-1;this.posBstart=this.n+1;this.posBend=this.n+this.n;
+    this.posSep2=this.posBend+1;this.posRstart=this.posSep2+1;this.posRend=this.posRstart+this.n-1;
+    this.head=this.posBend;this.state='q0';this.borrow=0;this.stepCount=0;this.halted=false;
+  }
+  step(){
+    if(this.halted)return this._s();
+    this.stepCount++;
+    if(this.state==='q0'){this.state='q1';return this._s();}
+    if(this.state==='q1'){
+      if(this.head<this.posBstart){this.state='q2';return this._s();}
+      const rel=this.posBend-this.head,idxA=this.posAend-rel,idxB=this.posBend-rel;
+      const a=+(this.tape[idxA]||0),b=+(this.tape[idxB]||0);
+      let d=a-b-this.borrow;
+      if(d>=0){this.tape[this.posRend-rel]=String(d);this.borrow=0;}
+      else{this.tape[this.posRend-rel]=String(d+2);this.borrow=1;}
+      this.head-=1;return this._s();
+    }
+    if(this.state==='q2'){this.state='qH';this.halted=true;return this._s();}
+    return this._s();
+  }
+  _s(){return {tape:[...this.tape],head:this.head,state:this.state,stepCount:this.stepCount,halted:this.halted};}
+  result(){return this.tape.slice(this.posRstart,this.posRend+1).join('');}
+}
+
+/* ===== UI ===== */
+const inputA=_('#inputA'),inputB=_('#inputB'),padCB=_('#padZeros'),twosCB=_('#allowTwoComplement');
+const calcBtn=_('#calcNow'),startBtn=_('#startSim'),stepBtn=_('#stepSim'),resetBtn=_('#resetSim');
+const speed=_('#speed'),speedVal=_('#speedVal');
+const outText=_('#resultText'),explain=_('#explain'),tapeDiv=_('#tape');
+const st=_('#state'),steps=_('#stepCount');
+const diList=_('#diList'),clearDI=_('#clearDI'),copyDI=_('#copyDI');
+
+let sim=null,timer=null,diBuffer=[];
+
+function renderTape(tape,head){
+  tapeDiv.innerHTML='';
+  tape.forEach((sym,i)=>{
+    const d=document.createElement('div');
+    d.className='cell';
+    if(sym==='#'){d.classList.add('sep');d.textContent='#';}
+    else if(sym===' '){d.classList.add('blank');d.textContent='·';}
+    else d.textContent=sym;
+    if(i===head)d.classList.add('head');
+    tapeDiv.appendChild(d);
+  });
+}
+function pushDI(tape,state,head){
+  const left=tape.slice(0,head).join('');
+  const cur=(tape[head]??' ');
+  const right=tape.slice(head+1).join('');
+  const line=`(${state}, ${left}[${cur}]${right})`;
+  diBuffer.push(line);
+  const div=document.createElement('div');
+  div.className='line'; div.textContent=line;
+  diList.appendChild(div);
+  diList.scrollTop=diList.scrollHeight;
+}
+
+function doFast(){
+  const r=subtractBinary(inputA.value,inputB.value,{twoComplementIfNeg:twosCB.checked,pad:padCB.checked});
+  if(!r.ok){outText.textContent='—';explain.textContent=r.reason;st.textContent='Error';return;}
+  outText.textContent=r.result;explain.textContent=r.note||'';st.textContent='Done';steps.textContent='0';
+}
+function startSim(){
+  if(timer){clearInterval(timer);timer=null;}
+  sim=new TMSim(inputA.value,inputB.value,{pad:padCB.checked});
+  tapeDiv.innerHTML=''; diList.innerHTML=''; diBuffer=[];
+  renderTape(sim.tape,sim.head); pushDI(sim.tape,sim.state,sim.head);
+  st.textContent=sim.state; steps.textContent='0';
+  timer=setInterval(()=>{
+    const s=sim.step();
+    renderTape(s.tape,s.head); pushDI(s.tape,s.state,s.head);
+    st.textContent=s.state; steps.textContent=s.stepCount;
+    if(s.halted){
+      clearInterval(timer); timer=null;
+      outText.textContent=sim.result(); explain.textContent='Resultado (cinta): '+sim.result();
+    }
+  }, +speed.value);
+}
+function stepOnce(){
+  if(!sim){
+    sim=new TMSim(inputA.value,inputB.value,{pad:padCB.checked});
+    tapeDiv.innerHTML=''; diList.innerHTML=''; diBuffer=[];
+    renderTape(sim.tape,sim.head); pushDI(sim.tape,sim.state,sim.head);
+    st.textContent=sim.state; steps.textContent='0'; return;
+  }
+  const s=sim.step(); renderTape(s.tape,s.head); pushDI(s.tape,s.state,s.head);
+  st.textContent=s.state; steps.textContent=s.stepCount;
+  if(s.halted){ outText.textContent=sim.result(); explain.textContent='Resultado (cinta): '+sim.result(); }
+}
+function resetSim(){
+  if(timer){clearInterval(timer);timer=null;}
+  sim=null; tapeDiv.innerHTML=''; diList.innerHTML=''; diBuffer=[];
+  const init=document.createElement('div'); init.className='line'; init.textContent='(q0, [·])';
+  diList.appendChild(init);
+  st.textContent='Idle'; steps.textContent='0'; outText.textContent='—'; explain.textContent='—';
+}
+
+/* Botones DI */
+clearDI.addEventListener('click', ()=>{ diList.innerHTML=''; diBuffer=[]; });
+copyDI.addEventListener('click', ()=>{
+  const text=diBuffer.join('\n')||'(vacío)';
+  navigator.clipboard.writeText(text).then(()=>{ copyDI.textContent='¡Copiado!'; setTimeout(()=>copyDI.textContent='Copiar DI',1000); });
+});
+
+/* Eventos generales */
+calcBtn.addEventListener('click', doFast);
+startBtn.addEventListener('click', ()=>{ resetSim(); startSim(); });
+stepBtn.addEventListener('click', stepOnce);
+resetBtn.addEventListener('click', resetSim);
+speed.addEventListener('input', ()=> speedVal.textContent=speed.value+' ms');
+speedVal.textContent=speed.value+' ms';
+</script>
+</body>
+</html>
