@@ -46,24 +46,50 @@
   .diList .line{padding:2px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
   .diBtns{display:flex;gap:8px;margin-top:10px}
   .chip{display:inline-block;background:#eef3ff;color:#1f3b8f;border:1px solid #d9e3ff;border-radius:999px;padding:2px 8px;font-size:12px;margin-top:6px}
+
+  /* Botón de Google Drive */
+  .drive-btn {
+    display:inline-block;
+    background:#1a73e8;
+    color:#fff;
+    font-weight:600;
+    text-decoration:none;
+    padding:10px 18px;
+    border-radius:8px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.15);
+    transition:background 0.25s, transform 0.2s;
+    margin-top:10px;
+  }
+  .drive-btn:hover {
+    background:#0c5ed7;
+    transform:translateY(-2px);
+  }
+
   @media (max-width:1000px){.cols{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>🎓 Ingeniería en Sistemas – UMG Cobán</header>
-<div class="phead">DAVID ESTUARDO LOPEZ CAAL</div>
+
 <div class="page">
   <div class="cols">
 
     <!-- Columna izquierda: simulación -->
     <div class="panel">
-      <div class="phead">Simulación de Máquina de Turing - Resta de Binarios</div>
+      <div class="phead">Simulación de Máquina de Turing</div>
+	<div class="phead">David Estuardo López Caal</div>
       <div class="pbody">
 
         <!-- Imagen del autómata exportada desde JFLAP -->
         <div class="automataBox">
           <img src="automata.png" alt="Autómata en JFLAP" class="automataImg">
           <div class="small chip">Figura: Autómata de la Máquina de Turing (JFLAP)</div>
+
+          <!-- 🔗 Botón hacia carpeta de Google Drive -->
+          <a href="https://drive.google.com/drive/folders/1qI3XcJH4dfiLg63rfzx2NNU-ErgqltQe?usp=drive_link"
+             target="_blank" rel="noopener noreferrer" class="drive-btn">
+             📂 Ver Documentacion del proyecto
+          </a>
         </div>
 
         <p class="small">Ingresa dos cadenas binarias. La cinta se organiza como
